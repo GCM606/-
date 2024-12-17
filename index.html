@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人导航页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+            background-color: #f0f2f5;
+            padding: 20px;
+            color: #1a1a1a;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .header h1 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+            font-size: 2.2em;
+        }
+
+        .category {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .category:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .category-header {
+            padding: 5px;
+            border-radius: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .category-header:hover {
+            background-color: #f8f9fa;
+        }
+
+        .category-title {
+            font-size: 1.3em;
+            color: #2c3e50;
+        }
+
+        .toggle-icon {
+            color: #3498db;
+            font-size: 0.9em;
+        }
+
+        .links-grid {
+            padding-top: 15px;
+            grid-gap: 15px;
+        }
+
+        .link-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            border: 1px solid #eee;
+        }
+
+        .link-item:hover {
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-color: #e0e0e0;
+        }
+
+        .link-item a {
+            color: #2c3e50;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .link-item a:hover {
+            color: #3498db;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            border: none;
+            outline: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-add {
+            background: #2ecc71;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .btn-add:hover {
+            background: #27ae60;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .delete-btn {
+            padding: 5px 10px;
+            color: #e74c3c;
+            font-size: 0.9em;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .delete-btn:hover {
+            opacity: 1;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .category-header .toggle-icon {
+            margin-right: 10px;
+            transition: transform 0.3s;
+        }
+
+        .category.expanded .toggle-icon {
+            transform: rotate(90deg);
+        }
+
+        .category.expanded .links-grid {
+            height: auto;
+            opacity: 1;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .modal-title {
+            margin-bottom: 20px;
+            color: #2c3e50;
+            font-size: 1.2em;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>个人导航页</h1>
+        <button class="btn btn-primary" onclick="addCategory()" style="margin-top: 10px;">添加新分类</button>
+    </div>
+
+    <div class="container" id="categories"></div>
+
+    <div id="addLinkModal" style="display: none;" class="modal-overlay">
+        <div class="modal">
+            <h3 class="modal-title">添加新链接</h3>
+            <input type="text" id="linkName" class="modal-input" placeholder="请输入链接名称">
+            <input type="text" id="linkUrl" class="modal-input" placeholder="请输入链接地址">
+            <div class="modal-buttons">
+                <button class="btn" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="confirmAddLink()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 从本地存储加载数据
+        let categories = JSON.parse(localStorage.getItem('navCategories')) || [];
+
+        // 保存数据到本地存储
+        function saveCategories() {
+            localStorage.setItem('navCategories', JSON.stringify(categories));
+        }
+
+        // 添加新分类
+        function addCategory() {
+            const name = prompt('请输入分类名称：');
+            if (name) {
+                categories.push({
+                    id: Date.now(),
+                    name: name,
+                    links: []
+                });
+                saveCategories();
+                renderCategories();
+            }
+        }
+
+        // 删除分类
+        function deleteCategory(categoryId) {
+            if (confirm('确定要删除这个分类吗？')) {
+                categories = categories.filter(c => c.id !== categoryId);
+                saveCategories();
+                renderCategories();
+            }
+        }
+
+        let currentCategoryId = null;
+
+        function showModal(categoryId) {
+            currentCategoryId = categoryId;
+            document.getElementById('addLinkModal').style.display = 'flex';
+            document.getElementById('linkName').value = '';
+            document.getElementById('linkUrl').value = '';
+            document.getElementById('linkName').focus();
+        }
+
+        function closeModal() {
+            document.getElementById('addLinkModal').style.display = 'none';
+            currentCategoryId = null;
+        }
+
+        function confirmAddLink() {
+            const name = document.getElementById('linkName').value.trim();
+            let url = document.getElementById('linkUrl').value.trim();
+            
+            if (!name || !url) {
+                alert('请填写完整信息');
+                return;
+            }
+
+            if (!url.match(/^https?:\/\//i)) {
+                url = 'https://' + url;
+            }
+
+            const category = categories.find(c => c.id === currentCategoryId);
+            if (category) {
+                category.links.push({
+                    id: Date.now(),
+                    name: name,
+                    url: url
+                });
+                saveCategories();
+                renderCategories();
+                closeModal();
+                
+                setTimeout(() => {
+                    const categoryElement = document.querySelector(`.category[data-id="${currentCategoryId}"]`);
+                    if (categoryElement) {
+                        categoryElement.classList.add('expanded');
+                    }
+                }, 0);
+            }
+        }
+
+        // 修改原来的 addLink 函数为 showModal 调用
+        function addLink(categoryId) {
+            showModal(categoryId);
+        }
+
+        // 删除链接
+        function deleteLink(categoryId, linkId) {
+            const category = categories.find(c => c.id === categoryId);
+            if (category) {
+                category.links = category.links.filter(l => l.id !== linkId);
+                saveCategories();
+                renderCategories();
+            }
+        }
+
+        // 切换分类的展开/折叠状态
+        function toggleCategory(categoryId) {
+            const categoryElement = document.querySelector(`.category[data-id="${categoryId}"]`);
+            categoryElement.classList.toggle('expanded');
+        }
+
+        // 渲染所有分类和链接
+        function renderCategories() {
+            // 保存当前展开的分类ID
+            const expandedCategories = Array.from(document.querySelectorAll('.category.expanded'))
+                .map(el => el.getAttribute('data-id'));
+            
+            const container = document.getElementById('categories');
+            container.innerHTML = categories.map(category => `
+                <div class="category ${expandedCategories.includes(category.id.toString()) ? 'expanded' : ''}" data-id="${category.id}">
+                    <div class="category-header" onclick="toggleCategory(${category.id})">
+                        <h2 class="category-title">
+                            <span class="toggle-icon">▶</span>
+                            ${category.name}
+                        </h2>
+                        <div>
+                            <button class="btn btn-add" onclick="addLink(${category.id}); event.stopPropagation();">添加链接</button>
+                            <button class="btn btn-danger" onclick="deleteCategory(${category.id}); event.stopPropagation();">删除分类</button>
+                        </div>
+                    </div>
+                    <div class="links-grid">
+                        ${category.links.map(link => `
+                            <div class="link-item">
+                                <a href="${link.url}" target="_blank">${link.name}</a>
+                                <button class="delete-btn" onclick="deleteLink(${category.id}, ${link.id})">删除</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 初始化渲染
+        renderCategories();
+    </script>
+</body>
+</html> 
